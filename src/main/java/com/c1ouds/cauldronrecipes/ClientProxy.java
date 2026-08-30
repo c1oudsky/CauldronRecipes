@@ -1,4 +1,4 @@
-package com.c1ouds.betteriron;
+package com.c1ouds.cauldronrecipes;
 
 public class ClientProxy extends CommonProxy {
 

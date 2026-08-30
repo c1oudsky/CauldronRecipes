@@ -6,7 +6,7 @@
 		"description": "An example mod for Minecraft 1.7.10 with Forge focused on a stable setup.",
 		"version": "${modVersion}",
 		"mcversion": "${minecraftVersion}",
-		"url": "https://github.com/C1oudS/BetterIron",
+		"url": "",
 		"updateUrl": "",
 		"authorList": ["C1oudS"],
 		"credits": "",

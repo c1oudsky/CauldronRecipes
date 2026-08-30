@@ -1,0 +1,9 @@
+{
+  "package": "com.c1ouds.cauldronrecipes.mixins",
+  "refmap": "mixins.cauldronrecipes.refmap.json",
+  "required": true,
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "MixinBlockCauldron"
+  ]
+}
