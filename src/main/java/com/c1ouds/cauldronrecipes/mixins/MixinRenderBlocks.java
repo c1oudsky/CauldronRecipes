@@ -1,17 +1,5 @@
 package com.c1ouds.cauldronrecipes.mixins;
 
-import com.c1ouds.cauldronrecipes.CauldronWorldData;
-import net.minecraft.block.BlockCauldron;
-import net.minecraft.block.BlockLiquid;
-import net.minecraft.client.renderer.RenderBlocks;
-import net.minecraft.util.IIcon;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
-
 //@Mixin(RenderBlocks.class)
 public class MixinRenderBlocks {
     /*@Shadow private IBlockAccess blockAccess;
