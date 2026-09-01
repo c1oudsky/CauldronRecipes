@@ -1,7 +1,9 @@
 package com.c1ouds.cauldronrecipes;
 
+import com.c1ouds.cauldronrecipes.mods.CTcompat;
 import com.c1ouds.cauldronrecipes.utils.CauldronRecipe;
 import com.c1ouds.cauldronrecipes.utils.ItemMetaKey;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -37,6 +39,9 @@ public class CommonProxy {
                 CAULDRON_WATER_BUCKETS.put(fullItem, emptyItem);
             }
         }*/
+
+        if(Loader.isModLoaded("MineTweaker3")) CTcompat.postInit();
+
         CauldronRecipe.RecipeRegistry.put(new ItemMetaKey(new ItemStack(Blocks.gravel)), new CauldronRecipe(
             new ItemStack(Blocks.gravel), new ItemStack(Items.flint), new ItemStack(Items.clay_ball) ));
 

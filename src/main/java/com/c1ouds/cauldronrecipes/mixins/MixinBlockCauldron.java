@@ -1,9 +1,9 @@
 package com.c1ouds.cauldronrecipes.mixins;
 
-import com.c1ouds.cauldronrecipes.CauldronWorldData;
+import com.c1ouds.cauldronrecipes.utils.CauldronWorldData;
+import com.c1ouds.cauldronrecipes.utils.CauldronWorldData.cauldronData;
 import com.c1ouds.cauldronrecipes.utils.CauldronRecipe;
 import com.c1ouds.cauldronrecipes.utils.ItemMetaKey;
-import com.c1ouds.cauldronrecipes.utils.cauldronData;
 import net.minecraft.block.BlockCauldron;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -12,7 +12,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidRegistry;
-import net.minecraftforge.fluids.FluidStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;

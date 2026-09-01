@@ -3,6 +3,8 @@ package com.c1ouds.cauldronrecipes.utils;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +16,7 @@ public class CauldronRecipe {
     final public int waterUsed;
     final private ItemStack resultOutput;
     final private ItemStack bonusOutput;
+    final private Fluid liquid = FluidRegistry.WATER;
 
     public CauldronRecipe(ItemStack input, ItemStack output, int waterUsed) {
         this.input = input; this.resultOutput = output;
