@@ -11,10 +11,17 @@ public class ItemMetaKey {
         this.item = item;
         this.meta = 0;
     }
-
+    public ItemMetaKey(Item item, int meta) {
+        this.item = item;
+        this.meta = meta;
+    }
     public ItemMetaKey(net.minecraft.item.ItemStack stack) {
         this.item = stack.getItem();
         this.meta = stack.getItemDamage();
+    }
+
+    public ItemMetaKey withMeta(int newMeta) {
+        return new ItemMetaKey(this.item, newMeta);
     }
 
     @Override
