@@ -39,7 +39,7 @@ public abstract class MixinBlockCauldron {
             if (currentFluid == null) currentFluid = FluidRegistry.WATER;
             if (itemstack != null) {
                 if (meta > 0) {
-                    var heldItem = new ItemMetaKey(itemstack);
+                    var heldItem = new ItemMetaKey(itemstack).intern();
                     if(!RecipeRegistry.containsKey(heldItem)) heldItem = heldItem.withMeta(WILDCARD_VALUE);
                     if(RecipeRegistry.containsKey(heldItem)) {
                         //System.out.println("[CauldronRecipes] Found recipe for "+heldItem.item.getUnlocalizedName()+":"+heldItem.meta);

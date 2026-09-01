@@ -35,6 +35,6 @@
  */
 dependencies {
     //runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.7.69-GTNH:dev")
-    implementation(files("libs/chunkapi-mc1.7.10-0.8.4-dev.jar"))
+    //implementation(files("libs/chunkapi-mc1.7.10-0.8.4-dev.jar"))
     devOnlyNonPublishable(rfg.deobf(files("libs/CraftTweaker-1.7.10-3.1.0-legacy.jar")))
 }

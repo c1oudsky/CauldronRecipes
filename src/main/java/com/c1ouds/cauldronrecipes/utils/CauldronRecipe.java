@@ -36,8 +36,8 @@ public class CauldronRecipe {
     static public void spawnItem(World world, int x, int y, int z, ItemStack stack) {
         EntityItem entityItem = new EntityItem(world, x+0.5, y+1, z+0.5, stack);
         //entityItem.motionY = 0.2;
-        //entityItem.motionX = /*(world.rand.nextDouble() - 0.5) * 0.04 */ 0;
-        //entityItem.motionZ = /*(world.rand.nextDouble() - 0.5) * 0.04 */ 0;
+        //entityItem.motionX = (world.rand.nextDouble() - 0.5) * 0.04;
+        //entityItem.motionZ = (world.rand.nextDouble() - 0.5) * 0.04;
         world.spawnEntityInWorld(entityItem);
     }
 }

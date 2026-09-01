@@ -1,9 +1,17 @@
 package com.c1ouds.cauldronrecipes.utils;
 
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import net.minecraft.item.Item;
 import java.util.Objects;
 
 public class ItemMetaKey {
+    // Automatic reduction of identical objects in favor of earliest one
+    private static final Interner<ItemMetaKey> POOL = Interners.newWeakInterner();
+    public ItemMetaKey intern() {
+        return POOL.intern(this);
+    }
+
     public final Item item;
     public final int meta;
 
@@ -21,7 +29,7 @@ public class ItemMetaKey {
     }
 
     public ItemMetaKey withMeta(int newMeta) {
-        return new ItemMetaKey(this.item, newMeta);
+        return new ItemMetaKey(this.item, newMeta).intern();
     }
 
     @Override

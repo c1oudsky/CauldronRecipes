@@ -31,7 +31,7 @@ public class CTcompat {
     private static void addRecipeHelper(IIngredient input, IItemStack output, int waterUsed, IItemStack bonus) {
         Object inputInternal = input.getInternal();
         if (inputInternal instanceof ItemStack itemstack) {
-            ItemMetaKey inputkey = new ItemMetaKey(itemstack);
+            ItemMetaKey inputkey = new ItemMetaKey(itemstack).intern();
             if(!RecipeRegistry.containsKey(inputkey))
                 MineTweakerAPI.apply(new AddAction(inputkey, itemstack, toItemStack(output),
                     bonus==null ? 1 : waterUsed, toItemStack(bonus)));
@@ -42,7 +42,7 @@ public class CTcompat {
             for(IItemStack iitem : list) {
                 ItemStack itemstack = toItemStack(iitem);
                 if (itemstack != null) {
-                    var inputkey = new ItemMetaKey(itemstack);
+                    var inputkey = new ItemMetaKey(itemstack).intern();
                     if(!RecipeRegistry.containsKey(inputkey))
                         MineTweakerAPI.apply(new AddAction(inputkey, itemstack, toItemStack(output),
                             bonus==null ? 1 : waterUsed, toItemStack(bonus)));
@@ -65,7 +65,7 @@ public class CTcompat {
     public static void removeRecipe(IIngredient input) {
         Object inputInternal = input.getInternal();
         if (inputInternal instanceof ItemStack itemstack) {
-            var inputkey = new ItemMetaKey(itemstack);
+            var inputkey = new ItemMetaKey(itemstack).intern();
             if(RecipeRegistry.containsKey(inputkey))
                 MineTweakerAPI.apply(new RemoveAction(inputkey, itemstack));
             else MineTweakerAPI.logError("No cauldron recipe with input " + itemstack.getDisplayName());
@@ -75,7 +75,7 @@ public class CTcompat {
             for (IItemStack iitem : list) {
                 var itemstack = toItemStack(iitem);
                 if (itemstack != null) {
-                    var inputkey = new ItemMetaKey(itemstack);
+                    var inputkey = new ItemMetaKey(itemstack).intern();
                     if(RecipeRegistry.containsKey(inputkey))
                         MineTweakerAPI.apply(new RemoveAction(inputkey, itemstack));
                     else MineTweakerAPI.logError("No cauldron recipe with input " + itemstack.getDisplayName());
