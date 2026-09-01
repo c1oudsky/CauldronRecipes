@@ -6,12 +6,11 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
-import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 
-import java.util.Map;
+import static net.minecraftforge.oredict.OreDictionary.WILDCARD_VALUE;
 
 public class CommonProxy {
 
@@ -40,6 +39,10 @@ public class CommonProxy {
         }*/
         CauldronRecipe.RecipeRegistry.put(new ItemMetaKey(new ItemStack(Blocks.gravel)), new CauldronRecipe(
             new ItemStack(Blocks.gravel), new ItemStack(Items.flint), new ItemStack(Items.clay_ball) ));
+
+        var anywool = new ItemStack(Blocks.wool, 1, WILDCARD_VALUE);
+        CauldronRecipe.RecipeRegistry.put(new ItemMetaKey(anywool), new CauldronRecipe(
+            anywool, new ItemStack(Blocks.wool), null ));
     }
 
     // register server commands in this event handler (Remove if not needed)
