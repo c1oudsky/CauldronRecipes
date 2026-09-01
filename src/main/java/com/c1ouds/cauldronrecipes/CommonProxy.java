@@ -16,30 +16,14 @@ import static net.minecraftforge.oredict.OreDictionary.WILDCARD_VALUE;
 
 public class CommonProxy {
 
-    // preInit "Run before anything else. Read your config, create blocks, items, etc, and register them with the
-    // GameRegistry." (Remove if not needed)
     public void preInit(FMLPreInitializationEvent event) {
         Config.synchronizeConfiguration(event.getSuggestedConfigurationFile());
         CauldronRecipes.LOG.info("I am BetterIron at version " + Tags.VERSION);
     }
 
-    // load "Do your mod setup. Build whatever data structures you care about. Register recipes." (Remove if not needed)
     public void init(FMLInitializationEvent event) {}
 
-    // postInit "Handle interaction with other mods, complete your setup based on this." (Remove if not needed)
     public void postInit(FMLPostInitializationEvent event) {
-        /*for (Map.Entry<String, String> entry : Config.watercontainers_names.entrySet()) {
-            String[] fullParts = entry.getKey().split(":");
-            String[] emptyParts = entry.getValue().split(":");
-
-            Item fullItem = GameRegistry.findItem(fullParts[0], fullParts[1]);
-            Item emptyItem = GameRegistry.findItem(emptyParts[0], emptyParts[1]);
-
-            if (fullItem != null && emptyItem != null) {
-                CAULDRON_WATER_BUCKETS.put(fullItem, emptyItem);
-            }
-        }*/
-
         if(Loader.isModLoaded("MineTweaker3")) CTcompat.postInit();
 
         CauldronRecipe.RecipeRegistry.put(new ItemMetaKey(new ItemStack(Blocks.gravel)), new CauldronRecipe(
