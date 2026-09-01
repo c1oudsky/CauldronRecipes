@@ -12,6 +12,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 
+import static com.c1ouds.cauldronrecipes.utils.CauldronRecipe.RecipeRegistry;
 import static net.minecraftforge.oredict.OreDictionary.WILDCARD_VALUE;
 
 public class CommonProxy {
@@ -26,12 +27,17 @@ public class CommonProxy {
     public void postInit(FMLPostInitializationEvent event) {
         if(Loader.isModLoaded("MineTweaker3")) CTcompat.postInit();
 
-        CauldronRecipe.RecipeRegistry.put(new ItemMetaKey(new ItemStack(Blocks.gravel)), new CauldronRecipe(
+        RecipeRegistry.put(new ItemMetaKey(new ItemStack(Blocks.gravel)).intern(), new CauldronRecipe(
             new ItemStack(Blocks.gravel), new ItemStack(Items.flint), new ItemStack(Items.clay_ball) ));
 
-        var anywool = new ItemStack(Blocks.wool, 1, WILDCARD_VALUE);
-        CauldronRecipe.RecipeRegistry.put(new ItemMetaKey(anywool), new CauldronRecipe(
-            anywool, new ItemStack(Blocks.wool), null ));
+        var block = new ItemStack(Blocks.wool, 1, WILDCARD_VALUE);
+        RecipeRegistry.put( new ItemMetaKey(block).intern(), new CauldronRecipe(block, new ItemStack(Blocks.wool), 2) );
+
+        block = new ItemStack(Blocks.stained_glass, 1, WILDCARD_VALUE);
+        RecipeRegistry.put( new ItemMetaKey(block).intern(), new CauldronRecipe(block, new ItemStack(Blocks.stained_glass), null) );
+
+        block = new ItemStack(Blocks.dirt);
+        RecipeRegistry.put( new ItemMetaKey(block).intern(), new CauldronRecipe(block, block, new ItemStack(Items.wheat_seeds)) );
     }
 
     // register server commands in this event handler (Remove if not needed)

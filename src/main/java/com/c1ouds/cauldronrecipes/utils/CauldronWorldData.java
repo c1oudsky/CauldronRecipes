@@ -82,7 +82,7 @@ public class CauldronWorldData extends WorldSavedData {
             String[] itemname = item.split(":");
             if (itemname.length == 3) {
                 var gameItem = GameRegistry.findItem(itemname[0], itemname[1]);
-                if (gameItem != null) this.itemMeta = new ItemMetaKey(gameItem, Integer.parseInt(itemname[2]));
+                if (gameItem != null) this.itemMeta = new ItemMetaKey(gameItem, Integer.parseInt(itemname[2])).intern();
                 else this.itemMeta = null;
             } else this.itemMeta = null;
             this.fluid = FluidRegistry.getFluid(fluid);

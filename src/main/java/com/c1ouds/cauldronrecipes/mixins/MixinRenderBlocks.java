@@ -1,5 +1,5 @@
 package com.c1ouds.cauldronrecipes.mixins;
-
+// Will need to figure out client-server logic to make any liquid work
 //@Mixin(RenderBlocks.class)
 public class MixinRenderBlocks {
     /*@Shadow private IBlockAccess blockAccess;
