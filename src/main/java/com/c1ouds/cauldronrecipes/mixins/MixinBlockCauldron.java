@@ -65,7 +65,8 @@ public abstract class MixinBlockCauldron {
                             if (recipe.get_itemstack(1) != null)
                                 CauldronRecipe.spawnItem(worldIn, x, y, z, recipe.get_itemstack(1));
                             if (meta == 0 && recipe.get_itemstack(2) != null) {
-                                if(currentBoundData != null) CauldronRecipe.spawnItem(worldIn, x, y, z, recipe.get_itemstack(2));
+                                if(currentBoundData != null && worldIn.rand.nextFloat() <= recipe.bonus_probability)
+                                    CauldronRecipe.spawnItem(worldIn, x, y, z, recipe.get_itemstack(2));
                                 data.boundCauldrons.remove(posKey); data.activeCauldrons.remove(posKey);
                                 data.markDirty();
                             }

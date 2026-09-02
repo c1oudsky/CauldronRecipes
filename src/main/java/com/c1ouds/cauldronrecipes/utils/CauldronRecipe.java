@@ -17,14 +17,17 @@ public class CauldronRecipe {
     final private ItemStack resultOutput;
     final private ItemStack bonusOutput;
     final private Fluid liquid = FluidRegistry.WATER;
+    final public float bonus_probability;
 
     public CauldronRecipe(ItemStack input, ItemStack output, int waterUsed) {
         this.input = input; this.resultOutput = output;
         this.waterUsed = waterUsed; bonusOutput = null;
+        bonus_probability = 0;
     }
-    public CauldronRecipe(ItemStack input, ItemStack output, ItemStack bonus) {
+    public CauldronRecipe(ItemStack input, ItemStack output, ItemStack bonus, float probability) {
         this.input = input; this.resultOutput = output;
         waterUsed = 1; bonusOutput = bonus;
+        bonus_probability = probability;
     }
     public ItemStack get_itemstack(int arg) {
         return arg==0 ? safecopy(input) : (arg==1 ? safecopy(resultOutput) : safecopy(bonusOutput));
@@ -35,9 +38,12 @@ public class CauldronRecipe {
 
     static public void spawnItem(World world, int x, int y, int z, ItemStack stack) {
         EntityItem entityItem = new EntityItem(world, x+0.5, y+1, z+0.5, stack);
-        //entityItem.motionY = 0.2;
-        //entityItem.motionX = (world.rand.nextDouble() - 0.5) * 0.04;
-        //entityItem.motionZ = (world.rand.nextDouble() - 0.5) * 0.04;
+        /* Undeeded
+        entityItem.motionY = 0.2;
+        entityItem.motionX = (world.rand.nextDouble() - 0.5) * 0.04;
+        entityItem.motionZ = (world.rand.nextDouble() - 0.5) * 0.04;
+        */
+        //entityItem.delayBeforeCanPickup = 5; //seems better without delay
         world.spawnEntityInWorld(entityItem);
     }
 }

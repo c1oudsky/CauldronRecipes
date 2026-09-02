@@ -28,13 +28,13 @@ public class CTcompat {
         }
         return null;
     }
-    private static void addRecipeHelper(IIngredient input, IItemStack output, int waterUsed, IItemStack bonus) {
+    private static void addRecipeHelper(IIngredient input, IItemStack output, int waterUsed, IItemStack bonus, float chance) {
         Object inputInternal = input.getInternal();
         if (inputInternal instanceof ItemStack itemstack) {
             ItemMetaKey inputkey = new ItemMetaKey(itemstack).intern();
             if(!RecipeRegistry.containsKey(inputkey))
                 MineTweakerAPI.apply(new AddAction(inputkey, itemstack, toItemStack(output),
-                    bonus==null ? 1 : waterUsed, toItemStack(bonus)));
+                    bonus==null ? 1 : waterUsed, toItemStack(bonus), chance));
             else MineTweakerAPI.logError("Cauldron already has a recipe with input " + itemstack.getDisplayName());
         }
         else {
@@ -45,7 +45,7 @@ public class CTcompat {
                     var inputkey = new ItemMetaKey(itemstack).intern();
                     if(!RecipeRegistry.containsKey(inputkey))
                         MineTweakerAPI.apply(new AddAction(inputkey, itemstack, toItemStack(output),
-                            bonus==null ? 1 : waterUsed, toItemStack(bonus)));
+                            bonus==null ? 1 : waterUsed, toItemStack(bonus), chance));
                     else MineTweakerAPI.logError("Cauldron already has a recipe with input " + itemstack.getDisplayName());
                 }
             }
@@ -54,11 +54,11 @@ public class CTcompat {
 
     @ZenMethod
     public static void addRecipe(IIngredient input, IItemStack output, int waterUsed) {
-        addRecipeHelper(input, output, waterUsed, null);
+        addRecipeHelper(input, output, waterUsed, null, 0);
     }
     @ZenMethod
-    public static void addRecipe(IIngredient input, IItemStack output, IItemStack bonus) {
-        addRecipeHelper(input, output, 1, bonus);
+    public static void addRecipe(IIngredient input, IItemStack output, IItemStack bonus, @Optional float chance) {
+        addRecipeHelper(input, output, 1, bonus, chance==0f ? 1f : chance);
     }
 
     @ZenMethod
@@ -91,20 +91,22 @@ public class CTcompat {
         final private ItemStack bonusoutput;
         final private int waterUsed;
         final private ItemMetaKey inputkey;
+        final private float chance;
 
-        public AddAction(ItemMetaKey inputkey, ItemStack input, ItemStack output, int waterUsed, ItemStack bonusoutput) {
+        public AddAction(ItemMetaKey inputkey, ItemStack input, ItemStack output, int waterUsed, ItemStack bonusoutput, float chance) {
             this.input = input;
             this.output = output;
             this.bonusoutput = bonusoutput;
             this.waterUsed = waterUsed;
             this.inputkey = inputkey;
+            this.chance = chance;
         }
 
         @Override
         public void apply() {
             CauldronRecipe recipe;
             if(bonusoutput == null) recipe = new CauldronRecipe(input, output, waterUsed);
-            else recipe = new CauldronRecipe(input, output, bonusoutput);
+            else recipe = new CauldronRecipe(input, output, bonusoutput, chance);
             RecipeRegistry.put(inputkey, recipe);
         }
 

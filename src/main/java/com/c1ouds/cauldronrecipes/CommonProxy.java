@@ -28,16 +28,16 @@ public class CommonProxy {
         if(Loader.isModLoaded("MineTweaker3")) CTcompat.postInit();
 
         RecipeRegistry.put(new ItemMetaKey(new ItemStack(Blocks.gravel)).intern(), new CauldronRecipe(
-            new ItemStack(Blocks.gravel), new ItemStack(Items.flint), new ItemStack(Items.clay_ball) ));
+            new ItemStack(Blocks.gravel), new ItemStack(Items.flint), new ItemStack(Items.clay_ball), 0.6f ));
 
         var block = new ItemStack(Blocks.wool, 1, WILDCARD_VALUE);
         RecipeRegistry.put( new ItemMetaKey(block).intern(), new CauldronRecipe(block, new ItemStack(Blocks.wool), 2) );
 
         block = new ItemStack(Blocks.stained_glass, 1, WILDCARD_VALUE);
-        RecipeRegistry.put( new ItemMetaKey(block).intern(), new CauldronRecipe(block, new ItemStack(Blocks.stained_glass), null) );
+        RecipeRegistry.put( new ItemMetaKey(block).intern(), new CauldronRecipe(block, new ItemStack(Blocks.glass), 1) );
 
         block = new ItemStack(Blocks.dirt);
-        RecipeRegistry.put( new ItemMetaKey(block).intern(), new CauldronRecipe(block, block, new ItemStack(Items.wheat_seeds)) );
+        RecipeRegistry.put( new ItemMetaKey(block).intern(), new CauldronRecipe(block, block, new ItemStack(Items.wheat_seeds), 0.3f) );
     }
 
     // register server commands in this event handler (Remove if not needed)

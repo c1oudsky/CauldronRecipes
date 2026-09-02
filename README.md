@@ -5,7 +5,7 @@ Examples: TODO
 It has CraftTweaker support, so you can add your custom recipes:
 ```zenscript
 # Syntax:
-mods.cauldronrecipes.addRecipe(IIngredient input, IItemStack output, IItemStack bonus)
+mods.cauldronrecipes.addRecipe(IIngredient input, IItemStack output, IItemStack bonus, (optional) float bonuschance)
 mods.cauldronrecipes.addRecipe(IIngredient input, IItemStack output, int waterUsed)
 mods.cauldronrecipes.removeRecipe(IIngredient input)
 ```
