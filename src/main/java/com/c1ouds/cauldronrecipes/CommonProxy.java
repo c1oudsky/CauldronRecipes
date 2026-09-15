@@ -10,6 +10,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import static com.c1ouds.cauldronrecipes.utils.CauldronRecipe.RecipeRegistry;
@@ -31,10 +32,12 @@ public class CommonProxy {
             new ItemStack(Blocks.gravel), new ItemStack(Items.flint), new ItemStack(Items.clay_ball), 0.6f ));
 
         var block = new ItemStack(Blocks.wool, 1, WILDCARD_VALUE);
-        RecipeRegistry.put( new ItemMetaKey(block).intern(), new CauldronRecipe(block, new ItemStack(Blocks.wool), 2) );
-
+        RecipeRegistry.put(new ItemMetaKey(Item.getItemFromBlock(Blocks.wool), WILDCARD_VALUE).intern(),
+            new CauldronRecipe(block, new ItemStack(Blocks.wool), 2) );
         block = new ItemStack(Blocks.stained_glass, 1, WILDCARD_VALUE);
         RecipeRegistry.put( new ItemMetaKey(block).intern(), new CauldronRecipe(block, new ItemStack(Blocks.glass), 1) );
+        block = new ItemStack(Blocks.stained_glass_pane, 1, WILDCARD_VALUE);
+        RecipeRegistry.put( new ItemMetaKey(block).intern(), new CauldronRecipe(block, new ItemStack(Blocks.glass_pane), 1) );
 
         block = new ItemStack(Blocks.dirt);
         RecipeRegistry.put( new ItemMetaKey(block).intern(), new CauldronRecipe(block, block, new ItemStack(Items.wheat_seeds), 0.3f) );
