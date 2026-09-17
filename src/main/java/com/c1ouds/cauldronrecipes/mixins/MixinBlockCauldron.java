@@ -6,7 +6,6 @@ import com.c1ouds.cauldronrecipes.utils.CauldronRecipe;
 import com.c1ouds.cauldronrecipes.utils.ItemMetaKey;
 import net.minecraft.block.BlockCauldron;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
@@ -47,29 +46,33 @@ public abstract class MixinBlockCauldron {
                         if(currentBoundData != null) {
                             boundItem = currentBoundData.itemMeta;
                             boundFluid = currentBoundData.fluid;
+                            if(!boundItem.equals(heldItem)) {
+                                // To not lose bonus from recipe
+                                cir.setReturnValue(true);
+                                return;
+                            }
                         }
                         CauldronRecipe recipe = RecipeRegistry.get(heldItem);
-                        if( ( currentBoundData == null || (boundItem.equals(heldItem) && boundFluid == currentFluid)
-                            ) && meta >= recipe.waterUsed
-                            && (itemstack.stackSize >= recipe.get_itemstack(0).stackSize || player.capabilities.isCreativeMode) )
-                        {
+                        if( meta >= recipe.waterUsed && (itemstack.stackSize >= recipe.get_itemstack(0).stackSize || player.capabilities.isCreativeMode) ) {
                             if (!player.capabilities.isCreativeMode) {
                                 itemstack.stackSize -= recipe.get_itemstack(0).stackSize;
                                 if (itemstack.stackSize <= 0)
-                                    player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
-                                if (player instanceof EntityPlayerMP playerMP)
-                                    playerMP.sendContainerToPlayer(player.inventoryContainer);
+                                    player.setCurrentItemOrArmor(0, null);
+                                player.inventoryContainer.detectAndSendChanges();
                             }
                             meta -= recipe.waterUsed;
                             this.func_150024_a(worldIn, x, y, z, meta);
+                            // result output
                             if (recipe.get_itemstack(1) != null)
                                 CauldronRecipe.spawnItem(worldIn, x, y, z, recipe.get_itemstack(1));
+                            // bonus output + bound data clean
                             if (meta == 0 && recipe.get_itemstack(2) != null) {
                                 if(currentBoundData != null && worldIn.rand.nextFloat() <= recipe.bonus_probability)
                                     CauldronRecipe.spawnItem(worldIn, x, y, z, recipe.get_itemstack(2));
                                 data.boundCauldrons.remove(posKey); data.activeCauldrons.remove(posKey);
                                 data.markDirty();
                             }
+                            // bind recipe with bonus to this cauldron if start with full water
                             if (meta == 2 /*&& currentBoundData == null //(redundant)*/&& recipe.get_itemstack(2) != null) {
                                 currentBoundData = new cauldronData(heldItem, currentFluid);
                                 data.boundCauldrons.put(posKey, currentBoundData);

@@ -7,10 +7,14 @@ import minetweaker.MineTweakerAPI;
 import minetweaker.api.item.IIngredient;
 import minetweaker.api.item.IItemStack;
 import minetweaker.api.liquid.ILiquidStack;
+import minetweaker.mc1710.item.MCItemStack;
 import net.minecraft.item.ItemStack;
 import stanhebben.zenscript.annotations.Optional;
 import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.c1ouds.cauldronrecipes.utils.CauldronRecipe.RecipeRegistry;
 
@@ -30,26 +34,21 @@ public class CTcompat {
     }
     private static void addRecipeHelper(IIngredient input, IItemStack output, int waterUsed, IItemStack bonus, float chance) {
         Object inputInternal = input.getInternal();
-        if (inputInternal instanceof ItemStack itemstack) {
-            ItemMetaKey inputkey = new ItemMetaKey(itemstack).intern();
-            if(!RecipeRegistry.containsKey(inputkey))
-                MineTweakerAPI.apply(new AddAction(inputkey, itemstack, toItemStack(output),
-                    bonus==null ? 1 : waterUsed, toItemStack(bonus), chance));
-            else MineTweakerAPI.logError("Cauldron already has a recipe with input " + itemstack.getDisplayName());
-        }
-        else {
-            var list = input.getItems();
-            for(IItemStack iitem : list) {
-                ItemStack itemstack = toItemStack(iitem);
-                if (itemstack != null) {
-                    var inputkey = new ItemMetaKey(itemstack).intern();
-                    if(!RecipeRegistry.containsKey(inputkey))
-                        MineTweakerAPI.apply(new AddAction(inputkey, itemstack, toItemStack(output),
-                            bonus==null ? 1 : waterUsed, toItemStack(bonus), chance));
-                    else MineTweakerAPI.logError("Cauldron already has a recipe with input " + itemstack.getDisplayName());
-                }
+        List<IItemStack> list = new ArrayList<>();
+        if (inputInternal instanceof ItemStack itemstack)
+            list.add(new MCItemStack(itemstack));
+        else
+            list = input.getItems();
+        for(IItemStack iitem : list) {
+            ItemStack itemstack = toItemStack(iitem);
+            if (itemstack != null) {
+                var inputkey = new ItemMetaKey(itemstack).intern();
+                if(!RecipeRegistry.containsKey(inputkey))
+                    MineTweakerAPI.apply( new AddAction(inputkey, itemstack, toItemStack(output), waterUsed, toItemStack(bonus), chance) );
+                else MineTweakerAPI.logError("Cauldron already has a recipe with input " + itemstack.getDisplayName());
             }
         }
+
     }
 
     @ZenMethod
