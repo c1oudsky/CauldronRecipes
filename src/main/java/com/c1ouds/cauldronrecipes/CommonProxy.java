@@ -29,7 +29,7 @@ public class CommonProxy {
         if(Loader.isModLoaded("MineTweaker3")) CTcompat.postInit();
 
         RecipeRegistry.put(new ItemMetaKey(new ItemStack(Blocks.gravel)).intern(), new CauldronRecipe(
-            new ItemStack(Blocks.gravel), new ItemStack(Items.flint), new ItemStack(Items.clay_ball), 0.6f ));
+            new ItemStack(Blocks.gravel), new ItemStack(Items.flint), new ItemStack(Items.clay_ball, 2), 0.3f ));
 
         var block = new ItemStack(Blocks.wool, 1, WILDCARD_VALUE);
         RecipeRegistry.put(new ItemMetaKey(Item.getItemFromBlock(Blocks.wool), WILDCARD_VALUE).intern(),
