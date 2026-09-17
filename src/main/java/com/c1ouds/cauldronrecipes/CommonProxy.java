@@ -29,18 +29,20 @@ public class CommonProxy {
         if(Loader.isModLoaded("MineTweaker3")) CTcompat.postInit();
 
         RecipeRegistry.put(new ItemMetaKey(new ItemStack(Blocks.gravel)).intern(), new CauldronRecipe(
-            new ItemStack(Blocks.gravel), new ItemStack(Items.flint), new ItemStack(Items.clay_ball), 0.6f ));
+            new ItemStack(Blocks.gravel), new ItemStack(Items.flint), new ItemStack(Items.clay_ball, 2), 0.3f ));
 
-        var block = new ItemStack(Blocks.wool, 1, WILDCARD_VALUE);
+        var item = new ItemStack(Blocks.wool, 1, WILDCARD_VALUE);
         RecipeRegistry.put(new ItemMetaKey(Item.getItemFromBlock(Blocks.wool), WILDCARD_VALUE).intern(),
-            new CauldronRecipe(block, new ItemStack(Blocks.wool), 2) );
-        block = new ItemStack(Blocks.stained_glass, 1, WILDCARD_VALUE);
-        RecipeRegistry.put( new ItemMetaKey(block).intern(), new CauldronRecipe(block, new ItemStack(Blocks.glass), 1) );
-        block = new ItemStack(Blocks.stained_glass_pane, 1, WILDCARD_VALUE);
-        RecipeRegistry.put( new ItemMetaKey(block).intern(), new CauldronRecipe(block, new ItemStack(Blocks.glass_pane), 1) );
+            new CauldronRecipe(item, new ItemStack(Blocks.wool), 2) );
+        item = new ItemStack(Blocks.stained_glass, 1, WILDCARD_VALUE);
+        RecipeRegistry.put( new ItemMetaKey(item).intern(), new CauldronRecipe(item, new ItemStack(Blocks.glass), 1) );
+        item = new ItemStack(Blocks.stained_glass_pane, 1, WILDCARD_VALUE);
+        RecipeRegistry.put( new ItemMetaKey(item).intern(), new CauldronRecipe(item, new ItemStack(Blocks.glass_pane), 1) );
 
-        block = new ItemStack(Blocks.dirt);
-        RecipeRegistry.put( new ItemMetaKey(block).intern(), new CauldronRecipe(block, block, new ItemStack(Items.wheat_seeds), 0.3f) );
+        item = new ItemStack(Blocks.dirt);
+        RecipeRegistry.put( new ItemMetaKey(item).intern(), new CauldronRecipe(item, item, new ItemStack(Items.wheat_seeds), 0.3) );
+        item = new ItemStack(Items.coal, 1, WILDCARD_VALUE);
+        RecipeRegistry.put( new ItemMetaKey(item).intern(), new CauldronRecipe(item, null, new ItemStack(Items.dye, 2), 0.5));
     }
 
     // register server commands in this event handler (Remove if not needed)

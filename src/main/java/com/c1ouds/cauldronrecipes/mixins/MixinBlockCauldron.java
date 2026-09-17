@@ -65,10 +65,25 @@ public abstract class MixinBlockCauldron {
                             // result output
                             if (recipe.get_itemstack(1) != null)
                                 CauldronRecipe.spawnItem(worldIn, x, y, z, recipe.get_itemstack(1));
-                            // bonus output + bound data clean
+                            // bonus output
                             if (meta == 0 && recipe.get_itemstack(2) != null) {
-                                if(currentBoundData != null && worldIn.rand.nextFloat() <= recipe.bonus_probability)
-                                    CauldronRecipe.spawnItem(worldIn, x, y, z, recipe.get_itemstack(2));
+                                if(currentBoundData != null) {
+                                    var bonus_output = recipe.get_itemstack(2);
+                                    if (recipe.clustered || bonus_output.stackSize == 1 || recipe.bonus_probability == 1) {
+                                        if(worldIn.rand.nextFloat() <= recipe.bonus_probability)
+                                            CauldronRecipe.spawnItem(worldIn, x, y, z, bonus_output);
+                                    }
+                                    else {
+                                        int count = 0;
+                                        for(int i=0; i<bonus_output.stackSize; i++)
+                                            if(worldIn.rand.nextFloat() <= recipe.bonus_probability) count++;
+                                        if (count > 0) {
+                                            bonus_output.stackSize = count;
+                                            CauldronRecipe.spawnItem(worldIn, x, y, z, bonus_output);
+                                        }
+                                    }
+                                }
+                            // bound data clean
                                 data.boundCauldrons.remove(posKey); data.activeCauldrons.remove(posKey);
                                 data.markDirty();
                             }

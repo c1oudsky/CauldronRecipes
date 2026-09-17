@@ -12,12 +12,11 @@ import net.minecraft.item.ItemStack;
 import stanhebben.zenscript.annotations.Optional;
 import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import static com.c1ouds.cauldronrecipes.utils.CauldronRecipe.RecipeRegistry;
 
+@SuppressWarnings("unused")
 @ZenClass("mods.cauldronrecipes")
 public class CTcompat {
 
@@ -32,7 +31,23 @@ public class CTcompat {
         }
         return null;
     }
-    private static void addRecipeHelper(IIngredient input, IItemStack output, int waterUsed, IItemStack bonus, float chance) {
+    private static void addRecipeHelper(IIngredient input, IItemStack output, int waterUsed, IItemStack bonus, double chance, boolean clustered) {
+        if (input == null) {
+            MineTweakerAPI.logError("Can't use null as recipe input!");
+            return;
+        }
+        if (output == null && bonus == null) {
+            MineTweakerAPI.logError("Recipe for "+input.getInternal()+" doesn't output anything!");
+            return;
+        }
+        if (waterUsed < 0 || waterUsed > 3) {
+            MineTweakerAPI.logError("Used water can't be "+(waterUsed < 0 ? "less than 0!" : "more than 3!")+" (recipe for "+input.getInternal()+")");
+            return;
+        }
+        if (chance < 0 || chance > 1) {
+            MineTweakerAPI.logError("Probability can't be "+(chance < 0 ? "below 0!" : "above 1!")+" (recipe for "+input.getInternal()+")");
+            return;
+        }
         Object inputInternal = input.getInternal();
         List<IItemStack> list = new ArrayList<>();
         if (inputInternal instanceof ItemStack itemstack)
@@ -44,7 +59,7 @@ public class CTcompat {
             if (itemstack != null) {
                 var inputkey = new ItemMetaKey(itemstack).intern();
                 if(!RecipeRegistry.containsKey(inputkey))
-                    MineTweakerAPI.apply( new AddAction(inputkey, itemstack, toItemStack(output), waterUsed, toItemStack(bonus), chance) );
+                    MineTweakerAPI.apply( new AddAction(inputkey, itemstack, toItemStack(output), waterUsed, toItemStack(bonus), chance, clustered) );
                 else MineTweakerAPI.logError("Cauldron already has a recipe with input " + itemstack.getDisplayName());
             }
         }
@@ -53,11 +68,11 @@ public class CTcompat {
 
     @ZenMethod
     public static void addRecipe(IIngredient input, IItemStack output, int waterUsed) {
-        addRecipeHelper(input, output, waterUsed, null, 0);
+        addRecipeHelper(input, output, waterUsed, null, 0, true);
     }
     @ZenMethod
-    public static void addRecipe(IIngredient input, IItemStack output, IItemStack bonus, @Optional float chance) {
-        addRecipeHelper(input, output, 1, bonus, chance==0f ? 1f : chance);
+    public static void addRecipe(IIngredient input, IItemStack output, IItemStack bonus, @Optional("1.0") double chance, @Optional boolean clustered) {
+        addRecipeHelper(input, output, 1, bonus, chance, clustered);
     }
 
     @ZenMethod
@@ -90,22 +105,24 @@ public class CTcompat {
         final private ItemStack bonusoutput;
         final private int waterUsed;
         final private ItemMetaKey inputkey;
-        final private float chance;
+        final private double chance;
+        final private boolean clustered;
 
-        public AddAction(ItemMetaKey inputkey, ItemStack input, ItemStack output, int waterUsed, ItemStack bonusoutput, float chance) {
+        public AddAction(ItemMetaKey inputkey, ItemStack input, ItemStack output, int waterUsed, ItemStack bonusoutput, double chance, boolean clustered) {
             this.input = input;
             this.output = output;
             this.bonusoutput = bonusoutput;
             this.waterUsed = waterUsed;
             this.inputkey = inputkey;
             this.chance = chance;
+            this.clustered = clustered;
         }
 
         @Override
         public void apply() {
             CauldronRecipe recipe;
             if(bonusoutput == null) recipe = new CauldronRecipe(input, output, waterUsed);
-            else recipe = new CauldronRecipe(input, output, bonusoutput, chance);
+            else recipe = new CauldronRecipe(input, output, bonusoutput, chance, clustered);
             RecipeRegistry.put(inputkey, recipe);
         }
 
