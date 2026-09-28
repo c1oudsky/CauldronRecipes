@@ -1,10 +1,17 @@
 package com.c1ouds.cauldronrecipes.mixins;
+
+import com.c1ouds.cauldronrecipes.utils.CauldronWorldData;
+import net.minecraft.block.BlockCauldron;
+import net.minecraft.block.BlockLiquid;
+import net.minecraft.client.renderer.RenderBlocks;
+import net.minecraft.util.IIcon;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
+
 // Will need to figure out client-server logic to make any liquid work
-//@Mixin(RenderBlocks.class)
+@Mixin(RenderBlocks.class)
 public class MixinRenderBlocks {
-    /*@Shadow private IBlockAccess blockAccess;
-    private static CauldronWorldData cachedWorldData = null;
-    private int lastProvidedWorld = -999;
 
     @Redirect(
         method = "renderBlockCauldron", at = @At(value = "INVOKE",
@@ -14,14 +21,10 @@ public class MixinRenderBlocks {
     private IIcon redirectCauldronTexture(String name, BlockCauldron cauldron, int x, int y, int z) {
         IIcon icon = BlockLiquid.getLiquidIcon("water_still");
         String posKey = x+","+y+","+ z;
-        if (this.blockAccess instanceof World thisworld) {
-            if (cachedWorldData == null || lastProvidedWorld != thisworld.provider.dimensionId) cachedWorldData = CauldronWorldData.get(thisworld);
-            var cauldrondata = cachedWorldData.boundCauldrons.get(posKey);
-            if (cauldrondata != null) {
-                IIcon fluidIcon = cauldrondata.fluid.getStillIcon();
-                if (fluidIcon != null)  icon = fluidIcon;
-            }
+        if (CauldronWorldData.currentData.activeCauldrons.containsKey(posKey)) {
+            var fluid = CauldronWorldData.currentData.activeCauldrons.get(posKey);
+            return fluid.getIcon();
         }
         return icon;
-    }*/
+    }
 }

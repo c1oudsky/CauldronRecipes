@@ -1,10 +1,14 @@
 package com.c1ouds.cauldronrecipes.mixins;
 
+import com.c1ouds.cauldronrecipes.CommonProxy;
 import com.c1ouds.cauldronrecipes.utils.CauldronWorldData;
 import com.c1ouds.cauldronrecipes.utils.CauldronWorldData.cauldronData;
 import com.c1ouds.cauldronrecipes.utils.CauldronRecipe;
 import com.c1ouds.cauldronrecipes.utils.ItemMetaKey;
+import com.c1ouds.cauldronrecipes.utils.ServerToClientPacket;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockCauldron;
+import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -21,9 +25,8 @@ import static com.c1ouds.cauldronrecipes.utils.CauldronRecipe.RecipeRegistry;
 import static net.minecraftforge.oredict.OreDictionary.WILDCARD_VALUE;
 
 @Mixin(BlockCauldron.class)
-public abstract class MixinBlockCauldron {
+public abstract class MixinBlockCauldron extends Block {
     @Shadow abstract void func_150024_a(World worldIn, int x, int y, int z, int level);
-
     @Inject(method = "onBlockActivated", at = @At("HEAD"), cancellable = true)
     private void onCauldronActivated(World worldIn, int x, int y, int z, EntityPlayer player,
     int side, float subX, float subY, float subZ, CallbackInfoReturnable<Boolean> cir) {
@@ -32,89 +35,164 @@ public abstract class MixinBlockCauldron {
             int meta = worldIn.getBlockMetadata(x, y, z);
             //System.out.println("[CauldronRecipes] onCauldronActivated with meta "+meta);
             String posKey = x + "," + y + "," + z;
-            var data = CauldronWorldData.get(worldIn);
+            CauldronWorldData data = CauldronWorldData.get(worldIn);
             var currentBoundData = data.boundCauldrons.get(posKey);
             Fluid currentFluid = data.activeCauldrons.get(posKey);
-            if (currentFluid == null) currentFluid = FluidRegistry.WATER;
             if (itemstack != null) {
                 if (meta > 0) {
+                    if (currentFluid == null) {
+                        currentFluid = FluidRegistry.WATER;
+                        data.activeCauldrons.put(posKey, currentFluid);
+                    }
                     var heldItem = new ItemMetaKey(itemstack).intern();
                     if(!RecipeRegistry.containsKey(heldItem)) heldItem = heldItem.withMeta(WILDCARD_VALUE);
                     if(RecipeRegistry.containsKey(heldItem)) {
                         //System.out.println("[CauldronRecipes] Found recipe for "+heldItem.item.getUnlocalizedName()+":"+heldItem.meta);
-                        ItemMetaKey boundItem = null; Fluid boundFluid = null;
+                        CauldronRecipe recipe = RecipeRegistry.get(heldItem);
+                        var recipe_input = recipe.get_itemstack(0);
+                        var recipe_output = recipe.get_itemstack(1);
+                        var compoundRecipe = recipe_output == null;
+                        // Can't do compound recipe with partially full cauldron:
+                        if (compoundRecipe && meta < 3) return;
+                        // Can't do recipe with unmatching fluid:
+                        if(!currentFluid.equals(recipe.liquid)) return;
                         if(currentBoundData != null) {
-                            boundItem = currentBoundData.itemMeta;
-                            boundFluid = currentBoundData.fluid;
-                            if(!boundItem.equals(heldItem)) {
-                                // To not lose bonus from recipe
+                            ItemMetaKey boundItem = currentBoundData.itemMeta;
+                            // To not lose bonus from recipe
+                            if( !(boundItem.equals(heldItem)) ) {
                                 cir.setReturnValue(true);
                                 return;
                             }
                         }
-                        CauldronRecipe recipe = RecipeRegistry.get(heldItem);
-                        if( meta >= recipe.waterUsed && (itemstack.stackSize >= recipe.get_itemstack(0).stackSize || player.capabilities.isCreativeMode) ) {
+                        // Water and item deduction with outputs in the following branch
+                        if( meta >= recipe.waterUsed && (
+                            (!compoundRecipe && itemstack.stackSize >= recipe_input.stackSize)
+                            || (compoundRecipe && itemstack.stackSize >= 1)
+                            || player.capabilities.isCreativeMode) )
+                        {
                             if (!player.capabilities.isCreativeMode) {
-                                itemstack.stackSize -= recipe.get_itemstack(0).stackSize;
+                                itemstack.stackSize -= compoundRecipe? 1 : recipe_input.stackSize;
                                 if (itemstack.stackSize <= 0)
                                     player.setCurrentItemOrArmor(0, null);
                                 player.inventoryContainer.detectAndSendChanges();
                             }
-                            meta -= recipe.waterUsed;
-                            this.func_150024_a(worldIn, x, y, z, meta);
+                            if (recipe.waterUsed > 0) {
+                                meta -= recipe.waterUsed;
+                                this.func_150024_a(worldIn, x, y, z, meta);
+                            }
+                            // sounds provided by Et Futurum Requiem (if installed)
+                            if (currentFluid.equals(FluidRegistry.WATER) || currentFluid.equals(FluidRegistry.LAVA))
+                                worldIn.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, EFRsound(currentFluid, !compoundRecipe), 0.5F, 1F);
                             // result output
-                            if (recipe.get_itemstack(1) != null)
+                            if (!compoundRecipe)
                                 CauldronRecipe.spawnItem(worldIn, x, y, z, recipe.get_itemstack(1));
-                            // bonus output
-                            if (meta == 0 && recipe.get_itemstack(2) != null) {
-                                if(currentBoundData != null) {
-                                    var bonus_output = recipe.get_itemstack(2);
-                                    if (recipe.clustered || bonus_output.stackSize == 1 || recipe.bonus_probability == 1) {
-                                        if(worldIn.rand.nextFloat() <= recipe.bonus_probability)
-                                            CauldronRecipe.spawnItem(worldIn, x, y, z, bonus_output);
-                                    }
-                                    else {
-                                        int count = 0;
-                                        for(int i=0; i<bonus_output.stackSize; i++)
-                                            if(worldIn.rand.nextFloat() <= recipe.bonus_probability) count++;
-                                        if (count > 0) {
-                                            bonus_output.stackSize = count;
-                                            CauldronRecipe.spawnItem(worldIn, x, y, z, bonus_output);
-                                        }
+
+                            boolean compoundFinished = compoundRecipe && (recipe_input.stackSize < 2 ||
+                                currentBoundData != null && currentBoundData.amount >= recipe_input.stackSize);
+                            boolean bonusFinished = meta == 0 && currentBoundData != null;
+                            // check for 'currentBoundData != null' in bonusFinished ensures it was bound at the first place (thus bonus gained fairly)
+                            if ((bonusFinished || compoundFinished) && recipe.get_itemstack(2) != null) {
+                                //System.out.println("bonus output (" + currentBoundData.amount + " in cauldron, "+recipe_input.stackSize+" in recipe)");
+
+                                // If this was compound recipe - emptying cauldron
+                                if (meta > 0) {
+                                    meta = 0;
+                                    this.func_150024_a(worldIn, x, y, z, 0);
+                                }
+                                var bonus_output = recipe.get_itemstack(2);
+                                if (recipe.clustered || bonus_output.stackSize == 1 || recipe.bonus_probability == 1) {
+                                    if(recipe.bonus_probability == 1 || worldIn.rand.nextFloat() <= recipe.bonus_probability)
+                                        CauldronRecipe.spawnItem(worldIn, x, y, z, bonus_output);
+                                }
+                                else {
+                                    int count = 0;
+                                    for(int i=0; i<bonus_output.stackSize; i++)
+                                        if(worldIn.rand.nextFloat() <= recipe.bonus_probability) count++;
+                                    if (count > 0) {
+                                        bonus_output.stackSize = count;
+                                        CauldronRecipe.spawnItem(worldIn, x, y, z, bonus_output);
                                     }
                                 }
+                            }
                             // bound data clean
+                            if (meta == 0) {
                                 data.boundCauldrons.remove(posKey); data.activeCauldrons.remove(posKey);
                                 data.markDirty();
+                                CommonProxy.NETWORK.sendToDimension(new ServerToClientPacket(ServerToClientPacket.CauldronDataAction, data), worldIn.provider.dimensionId);
                             }
                             // bind recipe with bonus to this cauldron if start with full water
-                            if (meta == 2 /*&& currentBoundData == null //(redundant)*/&& recipe.get_itemstack(2) != null) {
-                                currentBoundData = new cauldronData(heldItem, currentFluid);
+                            if ((meta == 2  && recipe.get_itemstack(2) != null) || (meta == 3  && compoundRecipe)) {
+                                if (currentBoundData == null)
+                                    currentBoundData = new cauldronData(heldItem, 1);
+                                currentBoundData.amount++;
                                 data.boundCauldrons.put(posKey, currentBoundData);
                                 data.markDirty();
+                                CommonProxy.NETWORK.sendToDimension(new ServerToClientPacket(ServerToClientPacket.CauldronDataAction, data), worldIn.provider.dimensionId);
                             }
                             cir.setReturnValue(true);
+                            return;
                         }
                     }
                 }
-                if (meta < 3 && FluidContainerRegistry.isFilledContainer(itemstack)) {
-                    if(currentBoundData == null)
-                        if (FluidContainerRegistry.getFluidForFilledItem(itemstack).getFluid() == FluidRegistry.WATER) {
+                if (FluidContainerRegistry.isFilledContainer(itemstack)) {
+                    var heldFluid = FluidContainerRegistry.getFluidForFilledItem(itemstack).getFluid();
+                    // Fill with Fluid from held container (buckets included)
+                    if(meta < 3)
+                        if (currentFluid == null || heldFluid == currentFluid) {
                             if (!player.capabilities.isCreativeMode)
                                 player.inventory.setInventorySlotContents(player.inventory.currentItem, FluidContainerRegistry.drainFluidContainer(itemstack));
                             this.func_150024_a(worldIn, x, y, z, 3);
-                            data.activeCauldrons.put(posKey, FluidRegistry.WATER);
+                            data.activeCauldrons.put(posKey, heldFluid);
+                            data.markDirty();
+                            if (currentFluid == FluidRegistry.LAVA) worldIn.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, "minecraft_1.21:item.bucket.empty_lava", 0.5F, 1F);
+                            CommonProxy.NETWORK.sendToDimension(new ServerToClientPacket(ServerToClientPacket.CauldronDataAction, data), worldIn.provider.dimensionId);
                         }
                     cir.setReturnValue(true);
+                    return;
                 }
             }
             else if (player.isSneaking() && meta > 0) {
                 this.func_150024_a(worldIn, x,y,z, 0);
+                var liquid = data.activeCauldrons.get(posKey);
                 data.boundCauldrons.remove(posKey); data.activeCauldrons.remove(posKey);
                 data.markDirty();
-                //worldIn.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, meta > 3 ? "random.fizz" : "etfuturum:itemmeta.bucket.empty", 0.5F, 1F);
+                CommonProxy.NETWORK.sendToDimension(new ServerToClientPacket(ServerToClientPacket.CauldronDataAction, data), worldIn.provider.dimensionId);
+                if (liquid.equals(FluidRegistry.WATER) || liquid.equals(FluidRegistry.LAVA)) {
+                    // sounds provided by Et Futurum Requiem (if installed)
+                    worldIn.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, EFRsound(liquid, true), 0.5F, 1F);
+                }
                 cir.setReturnValue(true);
+                return;
+            }
+            if (meta > 0 && currentFluid != FluidRegistry.WATER) {
+                cir.setReturnValue(true);
+                return;
             }
         }
+    }
+    @Override
+    public void breakBlock(World world, int x, int y, int z, Block block, int metadata) {
+        var data = CauldronWorldData.get(world);
+        String posKey = x + "," + y + "," + z;
+        if (data.activeCauldrons.containsKey(posKey) || data.boundCauldrons.containsKey(posKey)) {
+            data.activeCauldrons.remove(posKey);
+            data.boundCauldrons.remove(posKey);
+            data.markDirty();
+        }
+    }
+    @Override
+    public int getMobilityFlag() {
+        return 2;
+    }
+    String EFRsound(Fluid liquid, boolean fill) {
+        if (!(liquid.equals(FluidRegistry.WATER) && liquid.equals(FluidRegistry.LAVA))) return "";
+        if (fill)
+           return liquid.equals(FluidRegistry.WATER) ? "minecraft_1.21:item.bucket.fill" : "minecraft_1.21:item.bucket.fill_lava";
+        else
+            return liquid.equals(FluidRegistry.WATER) ? "minecraft_1.21:item.bucket.empty" : "minecraft_1.21:item.bucket.empty_lava";
+    }
+
+    protected MixinBlockCauldron(Material materialIn) {
+        super(materialIn);
     }
 }

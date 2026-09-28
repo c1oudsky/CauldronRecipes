@@ -4,6 +4,7 @@
   "required": true,
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "MixinBlockCauldron"
+    "MixinBlockCauldron",
+    "MixinRenderBlocks"
   ]
 }

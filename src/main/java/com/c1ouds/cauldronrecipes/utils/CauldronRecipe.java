@@ -16,24 +16,26 @@ public class CauldronRecipe {
     final public int waterUsed;
     final private ItemStack resultOutput;
     final private ItemStack bonusOutput;
-    final public Fluid liquid = FluidRegistry.WATER;
+    final public Fluid liquid;
     final public double bonus_probability;
     final public boolean clustered;
 
-    public CauldronRecipe(ItemStack input, ItemStack output, int waterUsed) {
+    public CauldronRecipe(ItemStack input, ItemStack output, int waterUsed, Fluid fluid) {
         this.input = input; this.resultOutput = output;
         this.waterUsed = waterUsed; bonusOutput = null;
         bonus_probability = 0;
         clustered = true;
+        liquid = fluid;
     }
-    public CauldronRecipe(ItemStack input, ItemStack output, ItemStack bonus, double probability) {
-        this(input, output, bonus, probability, false);
+    public CauldronRecipe(ItemStack input, ItemStack output, ItemStack bonus, double probability, Fluid fluid) {
+        this(input, output, bonus, probability, false, fluid);
     }
-    public CauldronRecipe(ItemStack input, ItemStack output, ItemStack bonus, double probability, boolean clustered) {
+    public CauldronRecipe(ItemStack input, ItemStack output, ItemStack bonus, double probability, boolean clustered, Fluid fluid) {
         this.input = input; this.resultOutput = output;
-        waterUsed = 1; bonusOutput = bonus;
+        this.waterUsed = output==null? 0 : 1; bonusOutput = bonus;
         bonus_probability = probability;
         this.clustered = clustered;
+        liquid = fluid;
     }
     public ItemStack get_itemstack(int arg) {
         return arg==0 ? safecopy(input) : (arg==1 ? safecopy(resultOutput) : safecopy(bonusOutput));

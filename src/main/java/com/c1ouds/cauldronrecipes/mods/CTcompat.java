@@ -9,6 +9,9 @@ import minetweaker.api.item.IItemStack;
 import minetweaker.api.liquid.ILiquidStack;
 import minetweaker.mc1710.item.MCItemStack;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
 import stanhebben.zenscript.annotations.Optional;
 import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
@@ -31,7 +34,7 @@ public class CTcompat {
         }
         return null;
     }
-    private static void addRecipeHelper(IIngredient input, IItemStack output, int waterUsed, IItemStack bonus, double chance, boolean clustered) {
+    private static void addRecipeHelper(IIngredient input, IItemStack output, int waterUsed, IItemStack bonus, Fluid liquid, double chance, boolean clustered) {
         if (input == null) {
             MineTweakerAPI.logError("Can't use null as recipe input!");
             return;
@@ -48,6 +51,10 @@ public class CTcompat {
             MineTweakerAPI.logError("Probability can't be "+(chance < 0 ? "below 0!" : "above 1!")+" (recipe for "+input.getInternal()+")");
             return;
         }
+        if (liquid == null) {
+            MineTweakerAPI.logError("liquid in recipe can't be null! Like, seriously.");
+            return;
+        }
         Object inputInternal = input.getInternal();
         List<IItemStack> list = new ArrayList<>();
         if (inputInternal instanceof ItemStack itemstack)
@@ -57,9 +64,10 @@ public class CTcompat {
         for(IItemStack iitem : list) {
             ItemStack itemstack = toItemStack(iitem);
             if (itemstack != null) {
+                itemstack.stackSize = input.getAmount();
                 var inputkey = new ItemMetaKey(itemstack).intern();
                 if(!RecipeRegistry.containsKey(inputkey))
-                    MineTweakerAPI.apply( new AddAction(inputkey, itemstack, toItemStack(output), waterUsed, toItemStack(bonus), chance, clustered) );
+                    MineTweakerAPI.apply( new AddAction(inputkey, itemstack, toItemStack(output), waterUsed, toItemStack(bonus), liquid, chance, clustered) );
                 else MineTweakerAPI.logError("Cauldron already has a recipe with input " + itemstack.getDisplayName());
             }
         }
@@ -67,12 +75,24 @@ public class CTcompat {
     }
 
     @ZenMethod
-    public static void addRecipe(IIngredient input, IItemStack output, int waterUsed) {
-        addRecipeHelper(input, output, waterUsed, null, 0, true);
+    public static void addRecipe(IIngredient input, IItemStack output, int waterUsed, @Optional ILiquidStack liquid) {
+        Fluid fluid;
+        if (liquid != null) {
+            FluidStack stack = (FluidStack) liquid.getInternal();
+            fluid = stack.getFluid();
+        } else fluid = FluidRegistry.WATER;
+        addRecipeHelper(input, output, waterUsed, null, fluid, 1d, true);
     }
     @ZenMethod
-    public static void addRecipe(IIngredient input, IItemStack output, IItemStack bonus, @Optional("1.0") double chance, @Optional boolean clustered) {
-        addRecipeHelper(input, output, 1, bonus, chance, clustered);
+    public static void addRecipe(IIngredient input, IItemStack output, IItemStack bonus, @Optional double chance, @Optional boolean clustered, @Optional ILiquidStack liquid) {
+        Fluid fluid;
+       if (chance == 0) chance = 1;
+        if (liquid != null) {
+            FluidStack stack = (FluidStack) liquid.getInternal();
+            fluid = stack.getFluid();
+        } else fluid = FluidRegistry.WATER;
+        // waterUsed is irrelevant here, set automatically for this kind of recipes in CauldronRecipe
+        addRecipeHelper(input, output, 0, bonus, fluid, chance, clustered);
     }
 
     @ZenMethod
@@ -107,8 +127,9 @@ public class CTcompat {
         final private ItemMetaKey inputkey;
         final private double chance;
         final private boolean clustered;
+        final private Fluid liquid;
 
-        public AddAction(ItemMetaKey inputkey, ItemStack input, ItemStack output, int waterUsed, ItemStack bonusoutput, double chance, boolean clustered) {
+        public AddAction(ItemMetaKey inputkey, ItemStack input, ItemStack output, int waterUsed, ItemStack bonusoutput, Fluid liquid, double chance, boolean clustered) {
             this.input = input;
             this.output = output;
             this.bonusoutput = bonusoutput;
@@ -116,13 +137,14 @@ public class CTcompat {
             this.inputkey = inputkey;
             this.chance = chance;
             this.clustered = clustered;
+            this.liquid = liquid;
         }
 
         @Override
         public void apply() {
             CauldronRecipe recipe;
-            if(bonusoutput == null) recipe = new CauldronRecipe(input, output, waterUsed);
-            else recipe = new CauldronRecipe(input, output, bonusoutput, chance, clustered);
+            if(bonusoutput == null) recipe = new CauldronRecipe(input, output, waterUsed, liquid);
+            else recipe = new CauldronRecipe(input, output, bonusoutput, chance, clustered, liquid);
             RecipeRegistry.put(inputkey, recipe);
         }
 
