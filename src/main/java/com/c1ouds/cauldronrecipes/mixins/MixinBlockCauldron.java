@@ -80,9 +80,6 @@ public abstract class MixinBlockCauldron extends Block {
                                 meta -= recipe.waterUsed;
                                 this.func_150024_a(worldIn, x, y, z, meta);
                             }
-                            // sounds provided by Et Futurum Requiem (if installed)
-                            if (currentFluid.equals(FluidRegistry.WATER) || currentFluid.equals(FluidRegistry.LAVA))
-                                worldIn.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, EFRsound(currentFluid, !compoundRecipe), 0.5F, 1F);
                             // result output
                             if (!compoundRecipe)
                                 CauldronRecipe.spawnItem(worldIn, x, y, z, recipe.get_itemstack(1));
@@ -120,6 +117,11 @@ public abstract class MixinBlockCauldron extends Block {
                                 data.markDirty();
                                 CommonProxy.NETWORK.sendToDimension(new ServerToClientPacket(ServerToClientPacket.CauldronDataAction, data), worldIn.provider.dimensionId);
                             }
+                            // not fill sound (emptying bucket one) if either cauldron was emptied or this is a regular recipe in any fluid but lava
+                            // (lava sounds better with fill sound for these, water sounds better with non-fill sound for regular recipes)
+                            boolean emptySound = meta == 0 || (!compoundRecipe && currentFluid != FluidRegistry.LAVA);
+                            // sounds provided by Et Futurum Requiem (if installed)
+                            worldIn.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, EFRsound(currentFluid, emptySound), 0.5F, 1F);
                             // bind recipe with bonus to this cauldron if start with full water
                             if ((meta == 2  && recipe.get_itemstack(2) != null) || (meta == 3  && compoundRecipe)) {
                                 if (currentBoundData == null)
@@ -144,7 +146,7 @@ public abstract class MixinBlockCauldron extends Block {
                             this.func_150024_a(worldIn, x, y, z, 3);
                             data.activeCauldrons.put(posKey, heldFluid);
                             data.markDirty();
-                            if (currentFluid == FluidRegistry.LAVA) worldIn.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, "minecraft_1.21:item.bucket.empty_lava", 0.5F, 1F);
+                            if (heldFluid == FluidRegistry.LAVA) worldIn.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, "minecraft_1.21:item.bucket.empty_lava", 0.5F, 1F);
                             CommonProxy.NETWORK.sendToDimension(new ServerToClientPacket(ServerToClientPacket.CauldronDataAction, data), worldIn.provider.dimensionId);
                         }
                     cir.setReturnValue(true);
@@ -157,10 +159,8 @@ public abstract class MixinBlockCauldron extends Block {
                 data.boundCauldrons.remove(posKey); data.activeCauldrons.remove(posKey);
                 data.markDirty();
                 CommonProxy.NETWORK.sendToDimension(new ServerToClientPacket(ServerToClientPacket.CauldronDataAction, data), worldIn.provider.dimensionId);
-                if (liquid.equals(FluidRegistry.WATER) || liquid.equals(FluidRegistry.LAVA)) {
-                    // sounds provided by Et Futurum Requiem (if installed)
-                    worldIn.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, EFRsound(liquid, true), 0.5F, 1F);
-                }
+                // sounds provided by Et Futurum Requiem (if installed)
+                worldIn.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, EFRsound(liquid, true), 0.5F, 1F);
                 cir.setReturnValue(true);
                 return;
             }
@@ -184,12 +184,12 @@ public abstract class MixinBlockCauldron extends Block {
     public int getMobilityFlag() {
         return 2;
     }
+
     String EFRsound(Fluid liquid, boolean fill) {
-        if (!(liquid.equals(FluidRegistry.WATER) && liquid.equals(FluidRegistry.LAVA))) return "";
         if (fill)
-           return liquid.equals(FluidRegistry.WATER) ? "minecraft_1.21:item.bucket.fill" : "minecraft_1.21:item.bucket.fill_lava";
+           return !liquid.equals(FluidRegistry.LAVA) ? "minecraft_1.21:item.bucket.fill" : "minecraft_1.21:item.bucket.fill_lava";
         else
-            return liquid.equals(FluidRegistry.WATER) ? "minecraft_1.21:item.bucket.empty" : "minecraft_1.21:item.bucket.empty_lava";
+            return !liquid.equals(FluidRegistry.LAVA) ? "minecraft_1.21:item.bucket.empty" : "minecraft_1.21:item.bucket.empty_lava";
     }
 
     protected MixinBlockCauldron(Material materialIn) {
