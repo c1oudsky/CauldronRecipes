@@ -38,23 +38,23 @@ public class CommonProxy {
         if(Loader.isModLoaded("MineTweaker3")) CTcompat.postInit();
         cpw.mods.fml.common.FMLCommonHandler.instance().bus().register(new CpwEventHandler());
 
-        RecipeRegistry.put(new ItemMetaKey(new ItemStack(Blocks.gravel)).intern(), new CauldronRecipe(
-            new ItemStack(Blocks.gravel), new ItemStack(Items.flint), new ItemStack(Items.clay_ball, 2), 0.3f, FluidRegistry.WATER ));
+        CauldronRecipe.AddRecipe(new CauldronRecipe(new ItemStack(Blocks.gravel), new ItemStack(Items.flint),
+            new ItemStack(Items.clay_ball, 2), 0.3f, FluidRegistry.WATER ));
 
         var item = new ItemStack(Blocks.wool, 1, WILDCARD_VALUE);
-        RecipeRegistry.put(new ItemMetaKey(Item.getItemFromBlock(Blocks.wool), WILDCARD_VALUE).intern(),
-            new CauldronRecipe(item, new ItemStack(Blocks.wool), 2, FluidRegistry.WATER) );
+        CauldronRecipe.AddRecipe(new CauldronRecipe(item, new ItemStack(Blocks.wool), 2, FluidRegistry.WATER) );
+        CauldronRecipe.AddRecipe(new CauldronRecipe(item, new ItemStack(Items.string, 2), 1, FluidRegistry.LAVA) );
         item = new ItemStack(Blocks.stained_glass, 1, WILDCARD_VALUE);
-        RecipeRegistry.put( new ItemMetaKey(item).intern(), new CauldronRecipe(item, new ItemStack(Blocks.glass), 1, FluidRegistry.WATER ) );
+        CauldronRecipe.AddRecipe( new CauldronRecipe(item, new ItemStack(Blocks.glass), 1, FluidRegistry.WATER ) );
         item = new ItemStack(Blocks.stained_glass_pane, 1, WILDCARD_VALUE);
-        RecipeRegistry.put( new ItemMetaKey(item).intern(), new CauldronRecipe(item, new ItemStack(Blocks.glass_pane), 1, FluidRegistry.WATER ) );
+        CauldronRecipe.AddRecipe( new CauldronRecipe(item, new ItemStack(Blocks.glass_pane), 1, FluidRegistry.WATER ) );
         item = new ItemStack(Blocks.stained_hardened_clay, 1, WILDCARD_VALUE);
-        RecipeRegistry.put( new ItemMetaKey(item).intern(), new CauldronRecipe(item, new ItemStack(Blocks.hardened_clay), 1, FluidRegistry.LAVA) );
+        CauldronRecipe.AddRecipe( new CauldronRecipe(item, new ItemStack(Blocks.hardened_clay), 1, FluidRegistry.LAVA) );
 
         item = new ItemStack(Blocks.dirt);
-        RecipeRegistry.put( new ItemMetaKey(item).intern(), new CauldronRecipe(item, item, new ItemStack(Items.wheat_seeds), 0.3, FluidRegistry.WATER ) );
+        CauldronRecipe.AddRecipe( new CauldronRecipe(item, item, new ItemStack(Items.wheat_seeds), 0.3, FluidRegistry.WATER ) );
         item = new ItemStack(Items.coal, 3, WILDCARD_VALUE);
-        RecipeRegistry.put( new ItemMetaKey(item).intern(), new CauldronRecipe(item, null, new ItemStack(Items.dye, 3), 0.5, FluidRegistry.WATER ));
+        CauldronRecipe.AddRecipe( new CauldronRecipe(item, null, new ItemStack(Items.dye, 3), 0.5, FluidRegistry.WATER ));
     }
 
     // register server commands in this event handler (Remove if not needed)

@@ -66,9 +66,10 @@ public class CTcompat {
             if (itemstack != null) {
                 itemstack.stackSize = input.getAmount();
                 var inputkey = new ItemMetaKey(itemstack).intern();
-                if(!RecipeRegistry.containsKey(inputkey))
-                    MineTweakerAPI.apply( new AddAction(inputkey, itemstack, toItemStack(output), waterUsed, toItemStack(bonus), liquid, chance, clustered) );
-                else MineTweakerAPI.logError("Cauldron already has a recipe with input " + itemstack.getDisplayName());
+                var inputentry = new CauldronRecipe.RecipeEntry(inputkey, liquid).intern();
+                if(!RecipeRegistry.containsKey(inputentry))
+                    MineTweakerAPI.apply( new AddAction(inputentry, itemstack, toItemStack(output), waterUsed, toItemStack(bonus), liquid, chance, clustered) );
+                else MineTweakerAPI.logError("Cauldron already has a recipe with input " + itemstack.getDisplayName() + " in " + liquid.getName());
             }
         }
 
@@ -86,36 +87,39 @@ public class CTcompat {
     @ZenMethod
     public static void addRecipe(IIngredient input, IItemStack output, IItemStack bonus, @Optional double chance, @Optional boolean clustered, @Optional ILiquidStack liquid) {
         Fluid fluid;
-       if (chance == 0) chance = 1;
+        if (chance == 0) chance = 1;
         if (liquid != null) {
             FluidStack stack = (FluidStack) liquid.getInternal();
             fluid = stack.getFluid();
         } else fluid = FluidRegistry.WATER;
-        // waterUsed is irrelevant here, set automatically for this kind of recipes in CauldronRecipe
+        // waterUsed is irrelevant here, is set automatically for this kind of recipes in CauldronRecipe
         addRecipeHelper(input, output, 0, bonus, fluid, chance, clustered);
     }
 
     @ZenMethod
-    public static void removeRecipe(IIngredient input) {
+    public static void removeRecipe(IIngredient input, @Optional ILiquidStack liquid) {
+        Fluid fluid;
+        if (liquid != null) {
+            FluidStack stack = (FluidStack) liquid.getInternal();
+            fluid = stack.getFluid();
+        } else fluid = FluidRegistry.WATER;
         Object inputInternal = input.getInternal();
-        if (inputInternal instanceof ItemStack itemstack) {
-            var inputkey = new ItemMetaKey(itemstack).intern();
-            if(RecipeRegistry.containsKey(inputkey))
-                MineTweakerAPI.apply(new RemoveAction(inputkey, itemstack));
-            else MineTweakerAPI.logError("No cauldron recipe with input " + itemstack.getDisplayName());
-        }
-        else {
-            var list = input.getItems();
-            for (IItemStack iitem : list) {
-                var itemstack = toItemStack(iitem);
-                if (itemstack != null) {
-                    var inputkey = new ItemMetaKey(itemstack).intern();
-                    if(RecipeRegistry.containsKey(inputkey))
-                        MineTweakerAPI.apply(new RemoveAction(inputkey, itemstack));
-                    else MineTweakerAPI.logError("No cauldron recipe with input " + itemstack.getDisplayName());
-                }
+        List<IItemStack> list = new ArrayList<>();
+        if (inputInternal instanceof ItemStack itemstack)
+            list.add(new MCItemStack(itemstack));
+        else
+            list = input.getItems();
+        for (IItemStack iitem : list) {
+            var itemstack = toItemStack(iitem);
+            if (itemstack != null) {
+                var inputkey = new ItemMetaKey(itemstack).intern();
+                var inputentry = new CauldronRecipe.RecipeEntry(inputkey, fluid).intern();
+                if(RecipeRegistry.containsKey(inputentry))
+                    MineTweakerAPI.apply(new RemoveAction(inputentry, itemstack));
+                else MineTweakerAPI.logError("No cauldron recipe with input " + itemstack.getDisplayName() + " in " + fluid.getName());
             }
         }
+
     }
 
     private static class AddAction implements IUndoableAction {
@@ -124,17 +128,17 @@ public class CTcompat {
         final private ItemStack output;
         final private ItemStack bonusoutput;
         final private int waterUsed;
-        final private ItemMetaKey inputkey;
+        final private CauldronRecipe.RecipeEntry inputentry;
         final private double chance;
         final private boolean clustered;
         final private Fluid liquid;
 
-        public AddAction(ItemMetaKey inputkey, ItemStack input, ItemStack output, int waterUsed, ItemStack bonusoutput, Fluid liquid, double chance, boolean clustered) {
+        public AddAction(CauldronRecipe.RecipeEntry inputentry, ItemStack input, ItemStack output, int waterUsed, ItemStack bonusoutput, Fluid liquid, double chance, boolean clustered) {
             this.input = input;
             this.output = output;
             this.bonusoutput = bonusoutput;
             this.waterUsed = waterUsed;
-            this.inputkey = inputkey;
+            this.inputentry = inputentry;
             this.chance = chance;
             this.clustered = clustered;
             this.liquid = liquid;
@@ -145,7 +149,7 @@ public class CTcompat {
             CauldronRecipe recipe;
             if(bonusoutput == null) recipe = new CauldronRecipe(input, output, waterUsed, liquid);
             else recipe = new CauldronRecipe(input, output, bonusoutput, chance, clustered, liquid);
-            RecipeRegistry.put(inputkey, recipe);
+            RecipeRegistry.put(inputentry, recipe);
         }
 
         @Override
@@ -153,17 +157,17 @@ public class CTcompat {
 
         @Override
         public void undo() {
-            RecipeRegistry.remove(inputkey);
+            RecipeRegistry.remove(inputentry);
         }
 
         @Override
         public String describe() {
-            return "Adding cauldron recipe with input " + input.getDisplayName();
+            return "Adding cauldron recipe with input " + input.getDisplayName() + " in " + liquid.getName();
         }
 
         @Override
         public String describeUndo() {
-            return "Removing cauldron recipe with input " + input.getDisplayName();
+            return "Removing cauldron recipe with input " + input.getDisplayName() + " in " + liquid.getName();
         }
 
         @Override
@@ -175,18 +179,18 @@ public class CTcompat {
     private static class RemoveAction implements IUndoableAction {
 
         final private String inputname;
-        final private ItemMetaKey inputkey;
+        final private CauldronRecipe.RecipeEntry inputentry;
         final private CauldronRecipe recipe;
 
-        public RemoveAction(ItemMetaKey inputkey, ItemStack input) {
-            this.inputkey = inputkey;
+        public RemoveAction(CauldronRecipe.RecipeEntry inputentry, ItemStack input) {
+            this.inputentry = inputentry;
             this.inputname = input.getDisplayName();
-            this.recipe = RecipeRegistry.get(inputkey);
+            this.recipe = RecipeRegistry.get(inputentry);
         }
 
         @Override
         public void apply() {
-            RecipeRegistry.remove(inputkey);
+            RecipeRegistry.remove(inputentry);
         }
 
         @Override
@@ -194,17 +198,17 @@ public class CTcompat {
 
         @Override
         public void undo() {
-            RecipeRegistry.put(inputkey, recipe);
+            RecipeRegistry.put(inputentry, recipe);
         }
 
         @Override
         public String describe() {
-            return "Removing cauldron recipe with input " + inputname;
+            return "Removing cauldron recipe with input " + inputname + " in " + recipe.liquid.getName();
         }
 
         @Override
         public String describeUndo() {
-            return "Re-adding cauldron recipe with input " + inputname;
+            return "Re-adding cauldron recipe with input " + inputname + " in " + recipe.liquid.getName();
         }
 
         @Override

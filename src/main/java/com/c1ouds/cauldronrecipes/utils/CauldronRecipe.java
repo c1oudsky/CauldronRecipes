@@ -1,5 +1,7 @@
 package com.c1ouds.cauldronrecipes.utils;
 
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -8,9 +10,12 @@ import net.minecraftforge.fluids.FluidRegistry;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+
+import static com.c1ouds.cauldronrecipes.CauldronRecipes.LOG;
 
 public class CauldronRecipe {
-    public static Map<ItemMetaKey, CauldronRecipe> RecipeRegistry = new HashMap<>();
+    public static Map<RecipeEntry, CauldronRecipe> RecipeRegistry = new HashMap<>();
 
     final private ItemStack input;
     final public int waterUsed;
@@ -19,6 +24,13 @@ public class CauldronRecipe {
     final public Fluid liquid;
     final public double bonus_probability;
     final public boolean clustered;
+
+    public static boolean AddRecipe(CauldronRecipe recipe) {
+        RecipeEntry entry = new RecipeEntry(new ItemMetaKey(recipe.input).intern(), recipe.liquid).intern();
+        boolean added = !RecipeRegistry.containsKey(entry);
+        if (added) RecipeRegistry.put(entry, recipe);
+        return added;
+    }
 
     public CauldronRecipe(ItemStack input, ItemStack output, int waterUsed, Fluid fluid) {
         this.input = input; this.resultOutput = output;
@@ -53,5 +65,27 @@ public class CauldronRecipe {
         */
         //entityItem.delayBeforeCanPickup = 5; //seems better without delay
         world.spawnEntityInWorld(entityItem);
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    static public class RecipeEntry {
+        // Automatic reduction of identical objects in favor of earliest one
+        private static final Interner<RecipeEntry> POOL = Interners.newWeakInterner();
+        public RecipeEntry intern() { return POOL.intern(this); }
+
+        final private ItemMetaKey item; final private Fluid fluid;
+        public RecipeEntry(ItemMetaKey item, Fluid fluid) { this.item = item; this.fluid = fluid; }
+        @Override public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            RecipeEntry that = (RecipeEntry) o;
+            return this.item.equals(that.item) && this.fluid.equals(that.fluid);
+        }
+        @Override public int hashCode() {
+            return Objects.hash(item, fluid);
+        }
+        public RecipeEntry withMeta(int meta) {
+            return new RecipeEntry(item.withMeta(meta), fluid).intern();
+        }
     }
 }

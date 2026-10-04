@@ -45,10 +45,11 @@ public abstract class MixinBlockCauldron extends Block {
                         data.activeCauldrons.put(posKey, currentFluid);
                     }
                     var heldItem = new ItemMetaKey(itemstack).intern();
-                    if(!RecipeRegistry.containsKey(heldItem)) heldItem = heldItem.withMeta(WILDCARD_VALUE);
-                    if(RecipeRegistry.containsKey(heldItem)) {
+                    var entry = new CauldronRecipe.RecipeEntry(heldItem, currentFluid).intern();
+                    if(!RecipeRegistry.containsKey(entry)) entry = entry.withMeta(WILDCARD_VALUE);
+                    if(RecipeRegistry.containsKey(entry)) {
                         //System.out.println("[CauldronRecipes] Found recipe for "+heldItem.item.getUnlocalizedName()+":"+heldItem.meta);
-                        CauldronRecipe recipe = RecipeRegistry.get(heldItem);
+                        CauldronRecipe recipe = RecipeRegistry.get(entry);
                         var recipe_input = recipe.get_itemstack(0);
                         var recipe_output = recipe.get_itemstack(1);
                         var compoundRecipe = recipe_output == null;
@@ -146,7 +147,7 @@ public abstract class MixinBlockCauldron extends Block {
                             this.func_150024_a(worldIn, x, y, z, 3);
                             data.activeCauldrons.put(posKey, heldFluid);
                             data.markDirty();
-                            if (heldFluid == FluidRegistry.LAVA) worldIn.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, "minecraft_1.21:item.bucket.empty_lava", 0.5F, 1F);
+                            if (heldFluid != FluidRegistry.WATER) worldIn.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, EFRsound(heldFluid, false), 0.5F, 1F);
                             CommonProxy.NETWORK.sendToDimension(new ServerToClientPacket(ServerToClientPacket.CauldronDataAction, data), worldIn.provider.dimensionId);
                         }
                     cir.setReturnValue(true);
