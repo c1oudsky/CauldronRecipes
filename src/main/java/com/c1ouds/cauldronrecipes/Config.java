@@ -7,11 +7,13 @@ import net.minecraftforge.common.config.Configuration;
 
 public class Config {
 
-    public static boolean EFRloaded;
+    public static boolean addRecipes;
 
     public static void synchronizeConfiguration(File configFile) {
         Configuration configuration = new Configuration(configFile);
-        EFRloaded = Loader.isModLoaded("etfuturum");
+
+        addRecipes = configuration.getBoolean("addDefaultRecipes", Configuration.CATEGORY_GENERAL, true,
+            "Adds default built-in recipes to cauldron. Disable if you'd like to only use your own recipes via zenscripts.");
 
         if (configuration.hasChanged()) {
             configuration.save();
