@@ -23,4 +23,6 @@ removeRecipe(IIngredient input)
 ```
 note: clustered parameter (false by default) - if true, spawns bonus itemstack in full quantity if the probability check passed, and spawns none if not. default behavior (e.g. false) rather rolls probability for each item of the whole stack separately so players get more equally dispersed results (more frequent average results rather than either none or all).
 Of course, you can't (and wouldn't need to) set it if you don't use bonus chance parameter.
+
 If you set bonus and no regular ouput then the recipe is considered compound - the player will have to put full amount of required item as 1 per click, and fluid height in cauldron will not go lower until full amount is put - then it gets emptied and result output is given.
+The mechanic is similar for the fluid-transforming recipe.

@@ -32,6 +32,7 @@ public abstract class MixinBlockCauldron extends Block implements CS_Cauldron {
 
     @Shadow abstract public void func_150024_a(World worldIn, int x, int y, int z, int level);
     @Inject(method = "onBlockActivated", at = @At("HEAD"), cancellable = true)
+    // todo: needs to not fill with rain when storing not water
     private void onCauldronActivated(World worldIn, int x, int y, int z, EntityPlayer player,
     int side, float subX, float subY, float subZ, CallbackInfoReturnable<Boolean> cir) {
         if (!worldIn.isRemote) {
