@@ -5,16 +5,21 @@ wash color off wool and colored glass blocks and panes with water (1/3 bucket fo
 Wash color off terracotta with lava (1/3 of bucket)!
 Burn wool in lava in cauldron to get 2 string (1/3 of bucket)!
 Wash dirt in water to see if any wheat seeds wash off it (full bucket spent)!
+Turn water into lava by adding 2 magma creams into full cauldron!
 
 Each cauldron saves data about stored fluid and bound recipe (if it could be/needed to be bound). Any registered in Forge fluid is supported, meaning even modded ones if you like!
 How, you say? Well, it has CraftTweaker support, so you can add your custom recipes with following syntax:
 ```zenscript
 # Syntax:
-mods.cauldronrecipes.addRecipe(IIngredient input, IItemStack output, IItemStack bonus, (optional) float bonuschance, (optional) boolean clustered, (optional) ILiquidStack fluid)
-mods.cauldronrecipes.addRecipe(IIngredient input, IItemStack output, int waterUsed, (optional) ILiquidStack fluid)
+import mods.cauldronrecipes.addRecipe;
+import mods.cauldronrecipes.removeRecipe;
+
+addRecipe(IIngredient input, IItemStack output, IItemStack bonus, (optional) float bonuschance, (optional) boolean clustered, (optional) ILiquidStack fluid)
+addRecipe(IIngredient input, IItemStack output, int waterUsed, (optional) ILiquidStack fluid)
+addRecipe(IIngredient input, ILiquidStack fluid, ILiquidStack newFluid);
 
 # Removes added recipes - in case if you want to disable any of the mod's default recipes
-mods.cauldronrecipes.removeRecipe(IIngredient input)
+removeRecipe(IIngredient input)
 ```
 note: clustered parameter (false by default) - if true, spawns bonus itemstack in full quantity if the probability check passed, and spawns none if not. default behavior (e.g. false) rather rolls probability for each item of the whole stack separately so players get more equally dispersed results (more frequent average results rather than either none or all).
 Of course, you can't (and wouldn't need to) set it if you don't use bonus chance parameter.

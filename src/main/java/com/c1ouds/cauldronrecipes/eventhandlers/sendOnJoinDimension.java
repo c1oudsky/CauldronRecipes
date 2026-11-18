@@ -8,19 +8,19 @@ import net.minecraft.entity.player.EntityPlayerMP;
 
 import static com.c1ouds.cauldronrecipes.CommonProxy.NETWORK;
 
-public class CpwEventHandler {
+public class sendOnJoinDimension {
     @SubscribeEvent
     public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.player instanceof EntityPlayerMP player) {
             CauldronWorldData worldData = CauldronWorldData.get(player.worldObj);
-            NETWORK.sendTo(new ServerToClientPacket(ServerToClientPacket.CauldronDataAction, worldData), player);
+            NETWORK.sendTo(new ServerToClientPacket(worldData), player);
         }
     }
     @SubscribeEvent
     public void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.player instanceof EntityPlayerMP player) {
             CauldronWorldData worldData = CauldronWorldData.get(player.worldObj);
-            NETWORK.sendTo(new ServerToClientPacket(ServerToClientPacket.CauldronDataAction, worldData), player);
+            NETWORK.sendTo(new ServerToClientPacket(worldData), player);
         }
     }
 }

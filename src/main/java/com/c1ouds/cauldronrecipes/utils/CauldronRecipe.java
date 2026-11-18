@@ -21,12 +21,12 @@ public class CauldronRecipe {
     final public int waterUsed;
     final private ItemStack resultOutput;
     final private ItemStack bonusOutput;
-    final public Fluid liquid;
+    final public Fluid liquid, newLiquid;
     final public double bonus_probability;
     final public boolean clustered;
 
     public static boolean AddRecipe(CauldronRecipe recipe) {
-        RecipeEntry entry = new RecipeEntry(new ItemMetaKey(recipe.input).intern(), recipe.liquid).intern();
+        RecipeEntry entry = RecipeEntry.getEntry(new ItemMetaKey(recipe.input).intern(), recipe.liquid);
         boolean added = !RecipeRegistry.containsKey(entry);
         if (added) RecipeRegistry.put(entry, recipe);
         return added;
@@ -38,6 +38,7 @@ public class CauldronRecipe {
         bonus_probability = 0;
         clustered = true;
         liquid = fluid;
+        newLiquid = null;
     }
     public CauldronRecipe(ItemStack input, ItemStack output, ItemStack bonus, double probability, Fluid fluid) {
         this(input, output, bonus, probability, false, fluid);
@@ -48,11 +49,19 @@ public class CauldronRecipe {
         bonus_probability = probability;
         this.clustered = clustered;
         liquid = fluid;
+        newLiquid = null;
     }
+    public CauldronRecipe(ItemStack input, Fluid fluid, Fluid newFluid) {
+        this.input = input; this.resultOutput = null;
+        this.waterUsed = 0; bonusOutput = null;
+        bonus_probability = 0; clustered = true;
+        liquid = fluid; this.newLiquid = newFluid;
+    }
+
     public ItemStack get_itemstack(int arg) {
         return arg==0 ? safecopy(input) : (arg==1 ? safecopy(resultOutput) : safecopy(bonusOutput));
     }
-    ItemStack safecopy(ItemStack stack) {
+    static ItemStack safecopy(ItemStack stack) {
         return stack==null ? null : stack.copy();
     }
 
@@ -71,10 +80,13 @@ public class CauldronRecipe {
     static public class RecipeEntry {
         // Automatic reduction of identical objects in favor of earliest one
         private static final Interner<RecipeEntry> POOL = Interners.newWeakInterner();
-        public RecipeEntry intern() { return POOL.intern(this); }
+        private RecipeEntry intern() { return POOL.intern(this); }
 
         final private ItemMetaKey item; final private Fluid fluid;
-        public RecipeEntry(ItemMetaKey item, Fluid fluid) { this.item = item; this.fluid = fluid; }
+        private RecipeEntry(ItemMetaKey item, Fluid fluid) { this.item = item; this.fluid = fluid; }
+        public static RecipeEntry getEntry(ItemMetaKey item, Fluid fluid) {
+            return new RecipeEntry(item, fluid).intern();
+        }
         @Override public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
